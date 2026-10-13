@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoAI - Gráfico de Velas y Trading Asistido</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+ 
+<!-- nav -->
+<header class="border-b border-slate-800 bg-black sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+
+        <!-- Logo  -->
+        <div class="flex items-center gap-3">
+            <img
+                src="./logopng.png"
+                alt="CryptoAI Platform"
+                class="h-20 w-auto object-contain"
+                onerror="this.style.display='none'; console.error('No se encontró logopng.png');"
+            >
+        </div>
+
+        <!-- Botones  -->
+        <div class="flex items-center gap-4">
+            <button
+                id="walletBtn"
+                onclick="connectWallet()"
+                class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold px-3.5 py-2 rounded-lg border border-slate-700 transition"
+            >
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span id="walletText">Conectar MetaMask</span>
+            </button>
+
+            <div class="text-xs text-slate-400 hidden sm:block">
+                UNINPAHU • Samuel Miranda
+            </div>
+        </div>
+
+    </div>
+</header>
+
+
+
+
+  <main class="max-w-6xl mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Panel de Control  -->
+    <div class="md:col-span-2 space-y-6">
+      
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h2 class="text-xl font-bold flex items-center gap-2">
+              Ethereum (ETH/USDT)
+              <span class="relative flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">Predicción cuantitativa asistida por Random Forest y Volatilidad ATR</p>
+          </div>
+          <button onclick="refreshData()" class="text-xs bg-indigo-600 hover:bg-indigo-500 font-semibold px-3.5 py-2 rounded-lg transition">
+            Actualizar Datos
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          <div class="bg-slate-800/60 p-3.5 rounded-lg border border-slate-700/50">
+            <div class="text-xs text-slate-400 font-medium">Precio Actual</div>
+            <div id="price" class="text-lg font-bold text-white mt-1">Cargando...</div>
+          </div>
+          <div class="bg-slate-800/60 p-3.5 rounded-lg border border-slate-700/50">
+            <div class="text-xs text-slate-400 font-medium">Señal IA</div>
+            <div id="signal" class="text-base font-bold text-slate-300 mt-1">--</div>
+          </div>
+          <div class="bg-slate-800/60 p-3.5 rounded-lg border border-slate-700/50">
+            <div class="text-xs text-slate-400 font-medium">Confianza</div>
+            <div id="confidence" class="text-lg font-bold text-indigo-400 mt-1">--</div>
+          </div>
+          <div class="bg-slate-800/60 p-3.5 rounded-lg border border-slate-700/50">
+            <div class="text-xs text-slate-400 font-medium">RSI (14h)</div>
+            <div id="rsi" class="text-lg font-bold text-white mt-1">--</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-800/40 p-3.5 rounded-lg border border-slate-800">
+          <div class="text-xs text-indigo-300 font-bold uppercase tracking-wider mb-1">Diagnóstico Cuantitativo</div>
+          <p id="recommendation" class="text-xs text-slate-300 leading-relaxed">Consultando mercado...</p>
+        </div>
+      </div>
+
+      <!-- Gráfico de Velas -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+            Acción del Precio (Velas Horarias)
+          </h3>
+          <span class="text-[11px] text-slate-400">Binance Spot Feed</span>
+        </div>
+        <div id="chartContainer" class="w-full h-[320px] rounded-lg overflow-hidden border border-slate-800/60 bg-slate-950"></div>
+      </div>
+
+    </div>
+
+    <!-- Barra Lateral -->
+    <div class="space-y-6">
+
+      <!-- Simulador  -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
+        <h3 class="text-base font-bold text-white mb-1">Simulador de Trading</h3>
+        <p class="text-xs text-slate-400 mb-4">Prueba el modelo con gestión de riesgo y stop-loss dinámico.</p>
+
+        <div class="mb-4">
+          <label class="block text-xs text-slate-400 mb-1 font-medium">Capital a Simular (USD)</label>
+          <input type="number" id="simCapital" value="1000" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-semibold">
+        </div>
+
+        <button onclick="runSimulation()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">
+          Ejecutar Simulación
+        </button>
+
+        <div id="simResults" class="mt-4 hidden space-y-2 border-t border-slate-800 pt-3 text-xs">
+          <div class="flex justify-between py-1 border-b border-slate-800/60"><span class="text-slate-400">Capital Final:</span><span id="resFinal" class="font-bold text-white"></span></div>
+          <div class="flex justify-between py-1 border-b border-slate-800/60"><span class="text-slate-400">Rentabilidad Neta:</span><span id="resProfit" class="font-bold"></span></div>
+          <div class="flex justify-between py-1 border-b border-slate-800/60"><span class="text-slate-400">Operaciones:</span><span id="resTrades" class="font-bold text-white"></span></div>
+          <div class="flex justify-between py-1"><span class="text-slate-400">Tasa de Acierto:</span><span id="resWinRate" class="font-bold text-emerald-400"></span></div>
+        </div>
+      </div>
+
+      <!-- Módulo de Gestión de Riesgo -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">Reglas de Mitigación de Riesgo</h4>
+        <div class="p-3 bg-slate-800/40 rounded-lg border border-slate-800 text-xs text-slate-300 space-y-1">
+          <strong class="text-indigo-400 block">Stop-Loss Adaptativo (1.5x ATR)</strong>
+          <p class="text-slate-400 leading-relaxed">Corta pérdidas calculando la amplitud de volatilidad para evitar salidas por ruido de mercado.</p>
+        </div>
+        <div class="p-3 bg-slate-800/40 rounded-lg border border-slate-800 text-xs text-slate-300 space-y-1">
+          <strong class="text-indigo-400 block">Ratio Asimétrico 2:1</strong>
+          <p class="text-slate-400 leading-relaxed">El Take-Profit busca el doble del riesgo (3.0x ATR) para asegurar expectativa matemática positiva.</p>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    let chart, candleSeries;
+
+    function initChart() {
+      const container = document.getElementById('chartContainer');
+      chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: 320,
+        layout: {
+          background: { color: '#020617' },
+          textColor: '#94a3b8',
+        },
+        grid: {
+          vertLines: { color: '#1e293b' },
+          horzLines: { color: '#1e293b' },
+        },
+        timeScale: {
+          timeVisible: true,
+          borderColor: '#334155',
+        },
+        rightPriceScale: {
+          borderColor: '#334155',
+        }
+      });
+
+      candleSeries = chart.addCandlestickSeries({
+        upColor: '#10b981',
+        downColor: '#ef4444',
+        borderUpColor: '#10b981',
+        borderDownColor: '#ef4444',
+        wickUpColor: '#10b981',
+        wickDownColor: '#ef4444',
+      });
+
+      window.addEventListener('resize', () => {
+        chart.applyOptions({ width: container.clientWidth });
+      });
+    }
+
+    async function loadCandles() {
+      try {
+        const res = await fetch('/api/candles');
+        const data = await res.json();
+        if (data && data.length > 0) {
+          candleSeries.setData(data);
+        }
+      } catch (e) {
+        console.error('Error al cargar velas:', e);
+      }
+    }
+
+    async function fetchSignal() {
+      try {
+        const res = await fetch('/api/live-signal');
+        const data = await res.json();
+
+        document.getElementById('price').innerText = '$' + Number(data.last_price).toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('confidence').innerText = data.confidence + '%';
+        document.getElementById('rsi').innerText = data.indicators.rsi;
+        document.getElementById('recommendation').innerText = data.recommendation;
+
+        const sigEl = document.getElementById('signal');
+        sigEl.innerText = data.signal;
+        sigEl.className = data.signal === 'COMPRA' ? 'text-base font-bold mt-1 text-emerald-400' : 'text-base font-bold mt-1 text-amber-400';
+      } catch (err) {
+        console.error('Error al obtener senal:', err);
+      }
+    }
+
+    async function refreshData() {
+      fetchSignal();
+      loadCandles();
+    }
+
+    async function runSimulation() {
+      const cap = document.getElementById('simCapital').value;
+      try {
+        const res = await fetch('/api/simulate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({initial_capital: parseFloat(cap)})
+        });
+        const data = await res.json();
+        document.getElementById('simResults').classList.remove('hidden');
+        document.getElementById('resFinal').innerText = '$' + Number(data.final_capital).toLocaleString('en-US', {minimumFractionDigits: 2});
+        
+        const pEl = document.getElementById('resProfit');
+        pEl.innerText = (data.net_profit_pct > 0 ? '+' : '') + data.net_profit_pct + '%';
+        pEl.className = data.net_profit_pct >= 0 ? 'font-bold text-emerald-400' : 'font-bold text-rose-400';
+
+        document.getElementById('resTrades').innerText = data.total_trades;
+        document.getElementById('resWinRate').innerText = data.win_rate + '%';
+      } catch (err) {
+        alert('Error al ejecutar la simulación');
+      }
+    }
+
+    async function connectWallet() {
+      let provider = window.ethereum;
+      if (window.ethereum && window.ethereum.providers) {
+        provider = window.ethereum.providers.find(p => p.isMetaMask) || window.ethereum;
+      }
+
+      if (provider) {
+        try {
+          const accounts = await provider.request({ method: 'eth_requestAccounts' });
+          if (accounts && accounts.length > 0) {
+            const short = accounts[0].slice(0, 6) + '...' + accounts[0].slice(-4);
+            document.getElementById('walletText').innerText = short;
+            document.getElementById('walletBtn').className = 'flex items-center gap-2 bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 text-xs font-semibold px-3.5 py-2 rounded-lg';
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        alert('MetaMask no detectado.');
+      }
+    }
+
+    window.onload = () => {
+      initChart();
+      refreshData();
+    };
+  </script>
+</body>
+</html>
